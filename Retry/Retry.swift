@@ -5,12 +5,13 @@
 //  Created by Zef Houssney on 1/27/16.
 //
 
+
 import Foundation
 
 class Retry {
     typealias ErrorParams = [String: Any]
-    typealias Callback = (description: String, attempt: Int) -> Void
-    typealias ErrorCallback = (description: String, attempt: Int, errorParams: ErrorParams) -> Void
+    typealias Callback = (_ description: String, _ attempt: Int) -> Void
+    typealias ErrorCallback = (_ description: String, _ attempt: Int, _ errorParams: ErrorParams?) -> Void
 
     struct Config {
         var onSuccess: Callback?
@@ -18,7 +19,7 @@ class Retry {
         var onRetryAttempt: ErrorCallback?
         var onFinalFailure: ErrorCallback?
 
-        func attempt(description: String, retries: Int = 0, block: (Retry) -> Void) {
+        func attempt(_ description: String, retries: Int = 0, block: @escaping (Retry) -> Void) {
             Retry.attempt(description, retries: retries, config: self, block: block)
         }
     }
@@ -28,36 +29,36 @@ class Retry {
     let config: Config
     let description: String
     var attemptsAllowed: Int = 1
-    private var attemptBlock: (Retry) -> Void
+    fileprivate var attemptBlock: (Retry) -> Void
 
-    private(set) var currentAttempt: Int = 1
+    fileprivate(set) var currentAttempt: Int = 1
 
-    init(_ description: String, retries: Int = 1, config: Config = Retry.defaultConfig, block: (Retry) -> Void) {
+    init(_ description: String, retries: Int = 1, config: Config = Retry.defaultConfig, block: @escaping (Retry) -> Void) {
         self.description = description
         self.attemptsAllowed = retries + 1
         self.attemptBlock = block
         self.config = config
     }
 
-    static func attempt(description: String, retries: Int = 1, config: Config = Retry.defaultConfig, block: (Retry) -> Void) {
+    static func attempt(_ description: String, retries: Int = 1, config: Config = Retry.defaultConfig, block: @escaping (Retry) -> Void) {
         let attempt = Retry(description, retries: retries, config: config, block: block)
         attempt.attemptBlock(attempt)
     }
 
     func success() {
-        config.onSuccess?(description: description, attempt: currentAttempt)
+        config.onSuccess?(description, currentAttempt)
         if currentAttempt > 1 {
-            config.onSuccessAfterRetry?(description: description, attempt: currentAttempt)
+            config.onSuccessAfterRetry?(description, currentAttempt)
         }
     }
 
-    func failure(errorParams: ErrorParams, block failureBlock: () -> Void ) {
+    func failure(_ errorParams: ErrorParams? = nil, block failureBlock: () -> Void ) {
         if currentAttempt < attemptsAllowed {
-            config.onRetryAttempt?(description: description, attempt: currentAttempt, errorParams: errorParams)
-            currentAttempt++
+            config.onRetryAttempt?(description, currentAttempt, errorParams)
+            currentAttempt += 1
             attemptBlock(self)
         } else {
-            config.onFinalFailure?(description: description, attempt: currentAttempt, errorParams: errorParams)
+            config.onFinalFailure?(description, currentAttempt, errorParams)
             failureBlock()
         }
     }

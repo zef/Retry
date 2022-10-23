@@ -8,10 +8,10 @@
 import XCTest
 @testable import Retry
 
-enum BadError: Int, ErrorType {
-    case Fail = 1
-    case FailAgain = 2
-    case FailThrice = 3
+enum BadError: Int, Error {
+    case fail = 1
+    case failAgain = 2
+    case failThrice = 3
 }
 
 class RetryTests: XCTestCase {
@@ -20,14 +20,14 @@ class RetryTests: XCTestCase {
     var expectedFailures = 1
     var eventLog = [String]()
 
-    func failingFunction(success: (message: String) -> Void, failure: (error: ErrorType?, message: String) -> Void) {
+    func failingFunction(_ success: (_ message: String) -> Void, failure: (_ error: Error?, _ message: String) -> Void) {
         print("itsGonnaFail call", currentAttemptCount)
         currentAttemptCount += 1
         if currentAttemptCount > expectedFailures + 1 {
-            success(message: "success")
+            success("success")
         } else {
             let error = BadError(rawValue: currentAttemptCount - 1)
-            failure(error: error, message: "failure")
+            failure(error, "failure")
         }
     }
     
@@ -53,7 +53,7 @@ class RetryTests: XCTestCase {
                 self.eventLog.append("success on attempt \(attempt.currentAttempt)")
                 attempt.success()
             }, failure: { error, message in
-                attempt.failure([:]) {
+                attempt.failure() {
                     print("failed attempt \(attempt.currentAttempt)")
                     XCTAssert(false, "Final failure should not occur")
                 }
@@ -70,7 +70,7 @@ class RetryTests: XCTestCase {
                 XCTAssert(false, "Success should not occur")
                 attempt.success()
             }, failure: { error, message in
-                attempt.failure([:]) {
+                attempt.failure() {
                     self.eventLog.append("failure on attempt \(attempt.currentAttempt)")
                 }
             })
