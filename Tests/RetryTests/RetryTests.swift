@@ -30,7 +30,7 @@ class RetryTests: XCTestCase {
             failure(error, "failure")
         }
     }
-    
+
     override func setUp() {
         super.setUp()
         currentAttemptCount = 1
