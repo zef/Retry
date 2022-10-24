@@ -18,10 +18,6 @@ class Retry {
         var onSuccessAfterRetry: Callback?
         var onRetryAttempt: ErrorCallback?
         var onFinalFailure: ErrorCallback?
-
-        func attempt(_ description: String, retries: Int = 0, block: @escaping (Retry) -> Void) {
-            Retry.attempt(description, retries: retries, config: self, block: block)
-        }
     }
 
     static var defaultConfig = Config()
