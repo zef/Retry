@@ -8,26 +8,27 @@
 import XCTest
 @testable import Retry
 
-enum BadError: Int, Error {
-    case fail = 1
-    case failAgain = 2
-    case failThrice = 3
-}
-
 class RetryTests: XCTestCase {
+    enum RetryTestError: Int, Error {
+        case fail = 1
+        case failAgain = 2
+        case failThrice = 3
+    }
 
     var currentAttemptCount = 1
     var expectedFailures = 1
     var eventLog = [String]()
 
-    func failingFunction(_ success: (_ message: String) -> Void, failure: (_ error: Error?, _ message: String) -> Void) {
-        print("itsGonnaFail call", currentAttemptCount)
+    func failingFunction(_ completion: (Result<String, RetryTestError>) -> Void) {
+        print("failingFunction call", currentAttemptCount)
         currentAttemptCount += 1
         if currentAttemptCount > expectedFailures + 1 {
-            success("success")
+            completion(.success("success"))
         } else {
-            let error = BadError(rawValue: currentAttemptCount - 1)
-            failure(error, "failure")
+            guard let error = RetryTestError(rawValue: currentAttemptCount - 1) else {
+                fatalError("Could not instantiate test RetryTestError.")
+            }
+            completion(.failure(error))
         }
     }
 
@@ -49,15 +50,18 @@ class RetryTests: XCTestCase {
     func testSingleFailure() {
         expectedFailures = 1
         Retry.attempt("Simple Event") { attempt in
-            self.failingFunction({ message in
-                self.eventLog.append("success on attempt \(attempt.currentAttempt)")
-                attempt.success()
-            }, failure: { error, message in
-                attempt.failure() {
-                    print("failed attempt \(attempt.currentAttempt)")
-                    XCTAssert(false, "Final failure should not occur")
+            self.failingFunction { result in
+                switch result {
+                case .success:
+                    self.eventLog.append("success on attempt \(attempt.currentAttempt)")
+                    attempt.success()
+                case .failure:
+                    attempt.failure() {
+                        print("failed attempt \(attempt.currentAttempt)")
+                        XCTAssert(false, "Final failure should not occur")
+                    }
                 }
-            })
+            }
         }
 
         XCTAssertEqual(self.eventLog, ["success on attempt 2"])
@@ -66,14 +70,17 @@ class RetryTests: XCTestCase {
     func testDoubleFailure() {
         expectedFailures = 2
         Retry.attempt("Double Failure Event") { attempt in
-            self.failingFunction({ message in
-                XCTAssert(false, "Success should not occur")
-                attempt.success()
-            }, failure: { error, message in
-                attempt.failure() {
-                    self.eventLog.append("failure on attempt \(attempt.currentAttempt)")
+            self.failingFunction { result in
+                switch result {
+                case .success:
+                    XCTAssert(false, "Success should not occur")
+                    attempt.success()
+                case .failure:
+                    attempt.failure() {
+                        self.eventLog.append("failure on attempt \(attempt.currentAttempt)")
+                    }
                 }
-            })
+            }
         }
 
         XCTAssertEqual(self.eventLog, ["failure on attempt 2"])
