@@ -1,18 +1,23 @@
 #  Retry
 
-A simple API for performing code that can be tried multiple times before giving
+A simple Swift class for performing code that can be tried multiple times before giving
 up.
 
 ## Motivation
 
 I first conceived and built this library while working on an app in which we
-would commonly encounter errors that were recoverable by re-running certain bits
-of code.
+would commonly encounter errors that were frustrating to users, yet recoverable
+by re-running certain bits of code.
 
-This library can be used to help provide a more reliable user-experience, even
-when the services that an app relies upon can have intermittent failures.
+This library can be used to help provide a more reliable user-experience when
+the services that an app relies upon have intermittent failures.
 
-### Features
+## Usage
+
+For now, [see the tests](Tests/RetryTests/RetryTests.swift) for basic usage.
+
+
+### Logging and Metrics
 
 When trying to diagnose the source of problems and failures in an app, it's
 important to understand which failure points exist, and which of those can be
