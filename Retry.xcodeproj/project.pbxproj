@@ -25,6 +25,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8D82794D2906C24900B4A750 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		8DE890991C596B58002E3801 /* Retry.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Retry.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DE8909C1C596B58002E3801 /* Retry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Retry.h; sourceTree = "<group>"; };
 		8DE8909E1C596B58002E3801 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -56,6 +57,7 @@
 		8DE8908F1C596B58002E3801 = {
 			isa = PBXGroup;
 			children = (
+				8D82794D2906C24900B4A750 /* README.md */,
 				8DE8909B1C596B58002E3801 /* Retry */,
 				8DE890A71C596B58002E3801 /* RetryTests */,
 				8DE8909A1C596B58002E3801 /* Products */,
